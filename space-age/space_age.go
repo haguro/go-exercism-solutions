@@ -1,8 +1,11 @@
+//Package space provides the ability to calculate someone age on a given
+//planet (of Sol).
 package space
 
+//Planet represent a Solar system planet
 type Planet string
 
-const earth_op = 31557600
+const earthOp = 31557600
 
 // Orbital periods in seconds relative to Earth's
 var opr = map[Planet]float64{
@@ -16,6 +19,7 @@ var opr = map[Planet]float64{
 	"Neptune": 164.79132,
 }
 
+//Age returns the age in seconds on a given Solar system planet.
 func Age(seconds float64, planet Planet) float64 {
-	return seconds / (earth_op * opr[planet])
+	return seconds / (earthOp * opr[planet])
 }

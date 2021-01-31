@@ -16,13 +16,13 @@ func RunLengthEncode(input string) string {
 	for i, r := range runes {
 		if i < length-1 && r == runes[i+1] {
 			count++
-		} else {
-			if count > 1 {
-				encoded += strconv.Itoa(count)
-			}
-			encoded += string(r)
-			count = 1
+			continue
 		}
+		if count > 1 {
+			encoded += strconv.Itoa(count)
+		}
+		encoded += string(r)
+		count = 1
 	}
 	return encoded
 }

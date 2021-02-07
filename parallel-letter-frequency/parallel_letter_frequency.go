@@ -21,8 +21,8 @@ func Frequency(s string) FreqMap {
 // ConcurrentFrequency concurrently calls `Frequency` on multiple strings and
 // Combine the results.
 func ConcurrentFrequency(xs []string) FreqMap {
-	return concurrentFrequencyWithSyncMaps(xs)
-	// return concurrentFrequencyWithRWMutex(xs)
+	//return concurrentFrequencyWithSyncMaps(xs)
+	return concurrentFrequencyWithMutex(xs)
 }
 
 func concurrentFrequencyWithSyncMaps(xs []string) FreqMap {
@@ -31,44 +31,43 @@ func concurrentFrequencyWithSyncMaps(xs []string) FreqMap {
 		wg sync.WaitGroup
 	)
 	fm := FreqMap{}
-	for i, s := range xs {
+	for _, s := range xs {
 		wg.Add(1)
-		go func(k int, v string) {
-			sm.Store(k, Frequency(v))
+		go func(s string) {
+			for r, f := range Frequency(s) {
+				storedF, loaded := sm.LoadOrStore(r, f)
+				if loaded {
+					sm.Store(r, f+storedF.(int))
+				}
+			}
 			wg.Done()
-		}(i, s)
+		}(s)
 	}
 	wg.Wait()
 	sm.Range(func(key interface{}, value interface{}) bool {
-		for r, f := range value.(FreqMap) {
-			fm[r] += f
-		}
+		fm[key.(rune)] = value.(int)
 		return true
 	})
 	return fm
 }
 
-func concurrentFrequencyWithRWMutex(xs []string) FreqMap {
+func concurrentFrequencyWithMutex(xs []string) FreqMap {
 	var (
-		mx sync.RWMutex
+		mx sync.Mutex
 		wg sync.WaitGroup
 	)
-	xfm := []FreqMap{}
 	fm := FreqMap{}
 	for _, s := range xs {
 		wg.Add(1)
-		go func(v string) {
-			mx.Lock()
-			xfm = append(xfm, Frequency(v))
-			mx.Unlock()
+		go func(s string) {
+			for r, f := range Frequency(s) {
+				mx.Lock()
+				fm[r] += f
+				mx.Unlock()
+			}
 			wg.Done()
 		}(s)
 	}
 	wg.Wait()
-	for _, m := range xfm {
-		for r, f := range m {
-			fm[r] += f
-		}
-	}
 	return fm
 }

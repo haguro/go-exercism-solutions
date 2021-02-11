@@ -14,7 +14,7 @@ func LargestSeriesProduct(digits string, span int) (int64, error) {
 		var product int64 = 1
 		for j := 0; j < span; j++ {
 			digit := digits[i+j]
-			if digit < 0x30 || digit > 0x39 {
+			if digit < '0' || digit > '9' {
 				return 0, errors.New("string contains non-digit characters")
 			}
 			product *= int64(digit - 0x30)

@@ -18,12 +18,11 @@ func Frequency(s string) FreqMap {
 // combines the results.
 func ConcurrentFrequency(xs []string) FreqMap {
 	fm := FreqMap{}
-	c := make(chan FreqMap, len(xs))
+	c := make(chan FreqMap, 10)
 	for _, s := range xs {
-		go func(s string, c chan FreqMap) {
+		go func(s string) {
 			c <- Frequency(s)
-		}(s, c)
-
+		}(s)
 	}
 	for range xs {
 		for r, f := range <-c {

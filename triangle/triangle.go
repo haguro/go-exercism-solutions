@@ -20,9 +20,7 @@ func KindFromSides(a, b, c float64) Kind {
 	switch {
 	case math.IsNaN(a) || math.IsNaN(b) || math.IsNaN(c):
 		return NaT
-	case math.IsInf(a, 1) || math.IsInf(b, 1) || math.IsInf(c, 1):
-		return NaT
-	case math.IsInf(a, -1) || math.IsInf(b, -1) || math.IsInf(c, -1):
+	case math.IsInf(a, 0) || math.IsInf(b, 0) || math.IsInf(c, 0):
 		return NaT
 	case a <= 0 || b <= 0 || c <= 0 || a+b < c || a+c < b || b+c < a:
 		return NaT
@@ -30,7 +28,7 @@ func KindFromSides(a, b, c float64) Kind {
 		return Deg
 	case a == b && b == c:
 		return Equ
-	case (a == b && b != c) || (a == c && c != b) || (b == c && c != a):
+	case a == b || a == c || b == c:
 		return Iso
 	default:
 		return Sca

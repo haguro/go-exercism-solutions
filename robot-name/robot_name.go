@@ -14,6 +14,7 @@ type Robot struct {
 
 const maxUsedNames = 26 * 26 * 10 * 10 * 10
 
+var random = rand.New(rand.NewSource(time.Now().UnixNano()))
 var usedNames = map[string]bool{}
 
 // Name returns the robot name if it exists or generates a new one if it doesn't.
@@ -40,9 +41,8 @@ func (r *Robot) Reset() {
 }
 
 func generateName() string {
-	rand.Seed(time.Now().UnixNano())
-	char := func() rune {
-		return 'A' + rune(rand.Intn(26))
-	}
-	return fmt.Sprintf("%c%c%03d", char(), char(), rand.Intn(1000))
+	r1 := random.Intn(26) + 'A'
+	r2 := random.Intn(26) + 'A'
+	num := random.Intn(1000)
+	return fmt.Sprintf("%c%c%03d", r1, r2, num)
 }

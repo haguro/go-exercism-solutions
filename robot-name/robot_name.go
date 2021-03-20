@@ -22,7 +22,7 @@ func (r *Robot) Name() (string, error) {
 	if r.name != "" {
 		return r.name, nil
 	}
-	if len(usedNames) > maxUsedNames {
+	if len(usedNames) >= maxUsedNames {
 		return "", errors.New("robot namespace exausted")
 	}
 	name := generateName()

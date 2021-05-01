@@ -20,28 +20,32 @@ type standing struct {
 	points int
 }
 
-type byPointsAndTeams []*standing
-
-// Len returns the number of elements in the collection.
-func (s byPointsAndTeams) Len() int { return len(s) }
-
-// Swap swaps the elements with indexes i and j.
-func (s byPointsAndTeams) Swap(i int, j int) { s[i], s[j] = s[j], s[i] }
-
-// Less reports whether the element with index i must sort before the element with index j.
-func (s byPointsAndTeams) Less(i int, j int) bool {
-	if s[i].points == s[j].points {
-		return s[i].team < s[j].team
-	}
-	return s[i].points > s[j].points
-}
-
 // Tally generates a team standings table from a list of match outcomes
 func Tally(input io.Reader, output io.Writer) error {
+	standings, err := parseMatchOutcomes(input)
+	if err != nil {
+		return err
+	}
+
+	sort.SliceStable(standings, func(i, j int) bool {
+		if standings[i].points == standings[j].points {
+			return standings[i].team < standings[j].team
+		}
+		return standings[i].points > standings[j].points
+	})
+
+	output.Write([]byte(fmt.Sprintf(rowTemplate, "Team", "MP", "W", "D", "L", "P")))
+	for _, standing := range standings {
+		output.Write([]byte(fmt.Sprintf(rowTemplate, standing.team, standing.played, standing.won, standing.drawn, standing.lost, standing.points)))
+	}
+	return nil
+}
+
+func parseMatchOutcomes(input io.Reader) ([]*standing, error) {
 	var tokens []string
 	var standings []*standing
-	standingsMap := make(map[string]*standing)
 
+	standingsMap := make(map[string]*standing)
 	s := bufio.NewScanner(input)
 	for s.Scan() {
 		line := s.Text()
@@ -51,12 +55,12 @@ func Tally(input io.Reader, output io.Writer) error {
 
 		tokens = strings.Split(line, ";")
 		if len(tokens) < 3 {
-			return errors.New("malformed input")
+			return nil, errors.New("malformed input")
 		}
 
 		team1, team2, outcome := tokens[0], tokens[1], tokens[2]
 		if outcome != "win" && outcome != "loss" && outcome != "draw" {
-			return errors.New("invalid match outcome")
+			return nil, errors.New("invalid match outcome")
 		}
 
 		if _, ok := standingsMap[team1]; !ok {
@@ -88,10 +92,5 @@ func Tally(input io.Reader, output io.Writer) error {
 			standingsMap[team2].points++
 		}
 	}
-	sort.Stable(byPointsAndTeams(standings))
-	output.Write([]byte(fmt.Sprintf(rowTemplate, "Team", "MP", "W", "D", "L", "P")))
-	for _, standing := range standings {
-		output.Write([]byte(fmt.Sprintf(rowTemplate, standing.team, standing.played, standing.won, standing.drawn, standing.lost, standing.points)))
-	}
-	return nil
+	return standings, nil
 }

@@ -11,7 +11,7 @@ import (
 type Matrix [][]int
 
 // New parses a string representation of matrix into a Matrix.
-func New(s string) (*Matrix, error) {
+func New(s string) (Matrix, error) {
 	rows := strings.Split(s, "\n")
 	m := make(Matrix, len(rows))
 	numCells := 0
@@ -30,7 +30,7 @@ func New(s string) (*Matrix, error) {
 			m[i][j] = n
 		}
 	}
-	return &m, nil
+	return m, nil
 }
 
 // Rows returns a copy of the matrix
